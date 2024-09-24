@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Handwriting Recognition App</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #000;
+        }
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        nav {
+            background: transparent;
+            padding: 1em;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 1000;
+            transition: opacity 0.3s;
+            will-change: opacity;
+            display: flex;
+            align-items: center;
+        }
+        nav img {
+            height: 50px;
+            margin-right: 1100px;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        nav li {
+            padding: 0 10px;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .intro {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        .intro h1 {
+            font-size: 4em;
+            margin: 0;
+            padding: 10px;
+            line-height: 1;
+        }
+        .down-arrow {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+        }
+        .down-arrow button {
+            background-color: rgb(0, 0, 0);
+            background-image: url("{{ url_for('static', filename='images/arrow.png') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, filter 0.3s;
+            filter: invert(0%);
+        }
+        .down-arrow button:hover {
+            background-color: black;
+            filter: invert(100%);
+        }
+        button {
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            display: inline-block;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #e6e6e6;
+        }
+        .canvas-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 130vh;
+            background-color: #000;
+            color: #fff;
+            margin-top: 0px;
+        }
+        .canvas-section p {
+            text-align: center;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+        .intro, .canvas-section, #contact-section {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        .intro h1, .canvas-section p, #contact-section h2, #contact-section p, #contact-section li {
+            color: #fff; /* Ensure all text is white */
+        }
+        #contact-section {
+            padding-top: 400px; /* Adjust this value as needed */
+        }        
+        #contact-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        #contact-section a {
+            color: #fff;
+            text-decoration: underline;
+        }     
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            margin-right: 10px;
+            width: 650px; /* Change this value to adjust the width */            
+        }
+        .buttons-container button {
+            margin-right: 20px;
+        }
+        .buttons-container button:last-child {
+            margin-right: 0;
+        }
+        #recognizedText {
+            min-width: 200px;
+        }
+        footer.container {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+        }
+    </style>           
+</head>
+<body>
+    <nav>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"> 
+        <ul>
+            <li><a href="#" id="shareBtn">Share</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="#contact-section">Contact</a></li>
+        </ul>
+    </nav>
+    <div class="intro">
+        <h1><span id="dynamic-text"></span></h1>
+        <p>A handwriting recognition AI based on machine learning.</p>
+        <div class="down-arrow">
+            <button onclick="scrollToCanvas()"></button>
+        </div>
+    </div>
+    <div class="canvas-section" id="canvas-section">
+        <p>Handwriting Recognition Area</p>
+        <canvas id="canvas" width="640" height="480" style="border:1px solid #fff;"></canvas>
+        <div class="buttons-container">
+            <button type="button" onclick="recognizeHandwriting()">Recognize Handwriting</button>
+            <button type="button" onclick="clearCanvas()">Clear Canvas</button>
+        </div>
+        <h2 id="recognizedText">Your recognized text will appear here</h2>
+    </div>
+    <div id="contact-section">
+        <h2>Contact Us</h2>
+        <p>If you have any questions or feedback, feel free to reach out to us:</p>
+        <ul>
+            <li>Email: developer@example.com</li>
+            <li>LinkedIn: <a href="https://www.linkedin.com">Your LinkedIn Profile</a></li>
+            <li>GitHub: <a href="https://github.com">Your GitHub Profile</a></li>
+        </ul>
+    </div>    
+    <footer class="container">
+        <p>&copy; 2024 Handwriting Recognition App. All rights reserved.</p>
+    </footer>
+    <script>
+        function scrollToCanvas() {
+            const canvasSection = document.getElementById('canvas-section');
+            let start = window.pageYOffset;
+            let end = canvasSection.offsetTop+100;
+            let distance = end - start;
+            let startTime = null;
+
+            function ease(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                let timeElapsed = currentTime - startTime;
+                let run = ease(timeElapsed, start, distance, 1000); 
+                window.scrollTo(0, run);
+                if (timeElapsed < 1000) requestAnimationFrame(animation);
+            }
+
+            requestAnimationFrame(animation);
+        }
+
+        let lastScrollTop = 0;
+        window.addEventListener("scroll", function() {
+            const nav = document.querySelector('nav');
+            let scrollThreshold = 270; // Adjust this to start fading after 200px of scrolling, for example
+            let maxOpacityScroll = 300; // Fully transparent at 500px scroll. Adjust as needed.
+
+            let opacity = 1; // Default opacity
+            if(window.pageYOffset > scrollThreshold) {
+                if(window.pageYOffset >= maxOpacityScroll) {
+                    opacity = 0; // Fully transparent
+                } else {
+                    // Calculate opacity based on scroll position
+                    opacity = 1 - ((window.pageYOffset - scrollThreshold) / (maxOpacityScroll - scrollThreshold));
+                }
+            }
+
+            nav.style.opacity = opacity;
+        }, false);
+
+
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let drawing = false;
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            drawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+            let rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        async function recognizeHandwriting() {
+            let imageDataURL = canvas.toDataURL('image/png');
+            try {
+                let response = await fetch('/recognize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({image: imageDataURL}),
+                });
+                if (response.ok) {
+                    let result = await response.json();
+                    document.getElementById('recognizedText').innerText = result.text;
+                } else {
+                    alert('Failed to recognize handwriting.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            }
+        }
+
+        const text = "Hello! I'm InkWise AI";
+        const speed = 140;
+        let index = 0;
+
+        function typeWriter() {
+            if (index < text.length) {
+                document.getElementById("dynamic-text").innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, speed);
+            }
+        }
+
+        window.onload = function() {
+            setTimeout(typeWriter, 1000);
+            clearCanvas(); // Initialize the canvas with a white background on load
+        };
+        document.getElementById('shareBtn').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default anchor action
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('URL copied to clipboard!');
+            }).catch(err => {
+                console.error('Error in copying URL: ', err);
+            });
+        });        
+    </script>
+</body>
+</html>

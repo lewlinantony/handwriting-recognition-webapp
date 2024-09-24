@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>About Us - Handwriting Recognition App</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        nav {
+            background: transparent;
+            padding: 1em;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-right: 20px;
+        }
+        .developers-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 100px; /* Adjust as needed */
+        }
+        .developer {
+            text-align: center;
+            padding: 50px;
+            flex: 1; /* Each developer section takes up equal space */
+        }
+        .developer h2 {
+            font-size: 2em;
+        }
+        .developer p {
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        .developer img {
+            border-radius: 50%;
+            width: 200px; /* Increased width for larger images */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .developers-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .developer {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('index') }}#contact-section">Contact</a>
+    </nav>
+    <div class="developers-container">
+        <div class="developer">
+            <img src="{{ url_for('static', filename='images/ayush.png') }}" alt="Ayush Vizaj">
+            <h2>Ayush Seju</h2>
+            <p>Pursuing a BSc CA degree. Passionate about integrating machine learning with web technologies.</p>
+        </div>
+        <div class="developer">
+            <img src="{{ url_for('static', filename='images/abel.png') }}" alt="Abel George">
+            <h2>Abel Renny</h2>
+            <p>A fellow BSc CA degree student with a keen interest in AI and its applications in solving real-world problems.</p>
+        </div>
+    </div>
+</body>
+</html>
